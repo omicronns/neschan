@@ -1,5 +1,5 @@
-#include "stdafx.h"
 #include "nes_cpu.h"
+#include "nes_ppu.h"
 #include "nes_system.h"
 #include "nes_trace.h"
 
@@ -17,7 +17,7 @@ void nes_cpu::power_on(nes_system *system)
 
     // @TODO - Simulate full power-on state
     // http://wiki.nesdev.com/w/index.php/CPU_power_up_state
-    _context.P = 0x24;          // @TODO - Should be 0x34 - but temporarily set to 0x24 to match nintendulator baseline 
+    _context.P = 0x24;          // @TODO - Should be 0x34 - but temporarily set to 0x24 to match nintendulator baseline
     _context.A = _context.X = _context.Y = 0;
     _context.S = 0xfd;
     _context.PC = 0;
@@ -29,18 +29,18 @@ void nes_cpu::reset()
 }
 
 void nes_cpu::poke(uint16_t addr, uint8_t value)
-{ 
-    _mem->set_byte(addr, value); 
+{
+    _mem->set_byte(addr, value);
 }
 
 void nes_cpu::step_to(nes_cycle_t new_count)
 {
     // we are asked to proceed to new_count - keep executing one instruction
     while (_cycle < new_count && !_system->stop_requested())
-        exec_one_instruction();    
+        exec_one_instruction();
 }
 
-#define IS_ALU_OP_CODE_(op, offset, mode) case nes_op_code::op##_base + offset : NES_TRACE4(get_op_str(#op, nes_addr_mode::nes_addr_mode_##mode)); op(nes_addr_mode::nes_addr_mode_##mode); break; 
+#define IS_ALU_OP_CODE_(op, offset, mode) case nes_op_code::op##_base + offset : NES_TRACE4(get_op_str(#op, nes_addr_mode::nes_addr_mode_##mode)); op(nes_addr_mode::nes_addr_mode_##mode); break;
 #define IS_ALU_OP_CODE(op) \
     IS_ALU_OP_CODE_(op, 0x9, imm) \
     IS_ALU_OP_CODE_(op, 0x5, zp) \
@@ -60,7 +60,7 @@ void nes_cpu::step_to(nes_cycle_t new_count)
     IS_ALU_OP_CODE_(op, 0x1, ind_x) \
     IS_ALU_OP_CODE_(op, 0x11, ind_y)
 
-#define IS_RMW_OP_CODE_(op, opcode, offset, mode) case opcode + offset : NES_TRACE4(get_op_str(#op, nes_addr_mode::nes_addr_mode_##mode)); op(nes_addr_mode::nes_addr_mode_##mode); break; 
+#define IS_RMW_OP_CODE_(op, opcode, offset, mode) case opcode + offset : NES_TRACE4(get_op_str(#op, nes_addr_mode::nes_addr_mode_##mode)); op(nes_addr_mode::nes_addr_mode_##mode); break;
 #define IS_RMW_OP_CODE(op, opcode) \
     IS_RMW_OP_CODE_(op, opcode, 0x6, zp) \
     IS_RMW_OP_CODE_(op, opcode, 0xa, acc) \
@@ -202,7 +202,7 @@ void nes_cpu::exec_one_instruction()
 
         IS_OP_CODE_MODE(JMP, 0x4c, abs_jmp)
         IS_OP_CODE_MODE(JMP, 0x6c, ind_jmp)
-        
+
         IS_OP_CODE_MODE(BCC, 0x90, rel)
         IS_OP_CODE_MODE(BCS, 0xb0, rel)
         IS_OP_CODE_MODE(BEQ, 0xf0, rel)
@@ -267,7 +267,7 @@ void nes_cpu::exec_one_instruction()
         IS_UNOFFICIAL_OP_CODE_MODE(NOP, 0x7c, abs_x)
         IS_UNOFFICIAL_OP_CODE_MODE(NOP, 0xdc, abs_x)
         IS_UNOFFICIAL_OP_CODE_MODE(NOP, 0xfc, abs_x)
-       
+
         IS_UNOFFICIAL_OP_CODE_MODE(NOP, 0x89, imm)
 
         IS_UNOFFICIAL_OP_CODE_MODE(NOP, 0x82, imm)
@@ -281,7 +281,7 @@ void nes_cpu::exec_one_instruction()
         IS_UNOFFICIAL_OP_CODE_MODE(NOP, 0xda, imp)
         IS_UNOFFICIAL_OP_CODE_MODE(NOP, 0xfa, imp)
 
-        IS_UNOFFICIAL_OP_CODE_MODE(SLO, 0x03, ind_x)     
+        IS_UNOFFICIAL_OP_CODE_MODE(SLO, 0x03, ind_x)
         IS_UNOFFICIAL_OP_CODE_MODE(SLO, 0x07, zp)
         IS_UNOFFICIAL_OP_CODE_MODE(ANC, 0x0b, imm)
         IS_UNOFFICIAL_OP_CODE_MODE(SLO, 0x0f, abs)
@@ -290,7 +290,7 @@ void nes_cpu::exec_one_instruction()
         IS_UNOFFICIAL_OP_CODE_MODE(SLO, 0x1b, abs_y)
         IS_UNOFFICIAL_OP_CODE_MODE(SLO, 0x1f, abs_x)
 
-        IS_UNOFFICIAL_OP_CODE_MODE(RLA, 0x23, ind_x)     
+        IS_UNOFFICIAL_OP_CODE_MODE(RLA, 0x23, ind_x)
         IS_UNOFFICIAL_OP_CODE_MODE(RLA, 0x27, zp)
         IS_UNOFFICIAL_OP_CODE_MODE(ANC, 0x2b, imm)
         IS_UNOFFICIAL_OP_CODE_MODE(RLA, 0x2f, abs)
@@ -299,7 +299,7 @@ void nes_cpu::exec_one_instruction()
         IS_UNOFFICIAL_OP_CODE_MODE(RLA, 0x3b, abs_y)
         IS_UNOFFICIAL_OP_CODE_MODE(RLA, 0x3f, abs_x)
 
-        IS_UNOFFICIAL_OP_CODE_MODE(SRE, 0x43, ind_x)     
+        IS_UNOFFICIAL_OP_CODE_MODE(SRE, 0x43, ind_x)
         IS_UNOFFICIAL_OP_CODE_MODE(SRE, 0x47, zp)
         IS_UNOFFICIAL_OP_CODE_MODE(ALR, 0x4b, imm)
         IS_UNOFFICIAL_OP_CODE_MODE(SRE, 0x4f, abs)
@@ -308,7 +308,7 @@ void nes_cpu::exec_one_instruction()
         IS_UNOFFICIAL_OP_CODE_MODE(SRE, 0x5b, abs_y)
         IS_UNOFFICIAL_OP_CODE_MODE(SRE, 0x5f, abs_x)
 
-        IS_UNOFFICIAL_OP_CODE_MODE(RRA, 0x63, ind_x)     
+        IS_UNOFFICIAL_OP_CODE_MODE(RRA, 0x63, ind_x)
         IS_UNOFFICIAL_OP_CODE_MODE(RRA, 0x67, zp)
         IS_UNOFFICIAL_OP_CODE_MODE(ARR, 0x6b, imm)
         IS_UNOFFICIAL_OP_CODE_MODE(RRA, 0x6f, abs)
@@ -317,7 +317,7 @@ void nes_cpu::exec_one_instruction()
         IS_UNOFFICIAL_OP_CODE_MODE(RRA, 0x7b, abs_y)
         IS_UNOFFICIAL_OP_CODE_MODE(RRA, 0x7f, abs_x)
 
-        IS_UNOFFICIAL_OP_CODE_MODE(SAX, 0x83, ind_x)     
+        IS_UNOFFICIAL_OP_CODE_MODE(SAX, 0x83, ind_x)
         IS_UNOFFICIAL_OP_CODE_MODE(SAX, 0x87, zp)
         IS_UNOFFICIAL_OP_CODE_MODE(XAA, 0x8b, imm)
         IS_UNOFFICIAL_OP_CODE_MODE(SAX, 0x8f, abs)
@@ -326,7 +326,7 @@ void nes_cpu::exec_one_instruction()
         IS_UNOFFICIAL_OP_CODE_MODE(TAS, 0x9b, abs_y)
         IS_UNOFFICIAL_OP_CODE_MODE(AHX, 0x9f, abs_y)
 
-        IS_UNOFFICIAL_OP_CODE_MODE(LAX, 0xa3, ind_x)     
+        IS_UNOFFICIAL_OP_CODE_MODE(LAX, 0xa3, ind_x)
         IS_UNOFFICIAL_OP_CODE_MODE(LAX, 0xa7, zp)
         IS_UNOFFICIAL_OP_CODE_MODE(LAX, 0xab, imm)
         IS_UNOFFICIAL_OP_CODE_MODE(LAX, 0xaf, abs)
@@ -335,7 +335,7 @@ void nes_cpu::exec_one_instruction()
         IS_UNOFFICIAL_OP_CODE_MODE(LAS, 0xbb, zp_ind_y)
         IS_UNOFFICIAL_OP_CODE_MODE(LAX, 0xbf, abs_y)
 
-        IS_UNOFFICIAL_OP_CODE_MODE(DCP, 0xc3, ind_x)     
+        IS_UNOFFICIAL_OP_CODE_MODE(DCP, 0xc3, ind_x)
         IS_UNOFFICIAL_OP_CODE_MODE(DCP, 0xc7, zp)
         IS_UNOFFICIAL_OP_CODE_MODE(AXS, 0xcb, imm)
         IS_UNOFFICIAL_OP_CODE_MODE(DCP, 0xcf, abs)
@@ -344,7 +344,7 @@ void nes_cpu::exec_one_instruction()
         IS_UNOFFICIAL_OP_CODE_MODE(DCP, 0xdb, abs_y)
         IS_UNOFFICIAL_OP_CODE_MODE(DCP, 0xdf, abs_x)
 
-        IS_UNOFFICIAL_OP_CODE_MODE(ISC, 0xe3, ind_x)     
+        IS_UNOFFICIAL_OP_CODE_MODE(ISC, 0xe3, ind_x)
         IS_UNOFFICIAL_OP_CODE_MODE(ISC, 0xe7, zp)
         IS_UNOFFICIAL_OP_CODE_MODE(SBC, 0xeb, imm)
         IS_UNOFFICIAL_OP_CODE_MODE(ISC, 0xef, abs)
@@ -404,11 +404,11 @@ string nes_cpu::get_op_str(const char *op, nes_addr_mode addr_mode, bool is_offi
     int operand_size = 0;
     switch (addr_mode)
     {
-        case nes_addr_mode::nes_addr_mode_imp: 
+        case nes_addr_mode::nes_addr_mode_imp:
         case nes_addr_mode::nes_addr_mode_acc:
             break;
 
-        case nes_addr_mode::nes_addr_mode_rel: 
+        case nes_addr_mode::nes_addr_mode_rel:
         case nes_addr_mode::nes_addr_mode_imm:
         case nes_addr_mode::nes_addr_mode_zp:
         case nes_addr_mode::nes_addr_mode_zp_ind_x:
@@ -650,7 +650,7 @@ nes_cpu_cycle_t nes_cpu::get_cpu_cycle(operand_t operand, nes_addr_mode mode)
 
     case nes_addr_mode_ind_x:
         return nes_cpu_cycle_t(6);
-        
+
     case nes_addr_mode_ind_y:
         return nes_cpu_cycle_t(operand.is_page_crossing ? 6 : 5);
 
@@ -670,7 +670,7 @@ nes_cpu_cycle_t nes_cpu::get_branch_cycle(bool cond, uint16_t new_addr, int8_t r
         cycle++;
 
         // if crossing to a new page ++
-        // @DOCBUG 
+        // @DOCBUG
         // http://obelisk.me.uk/6502/reference.html#BEQ says +2
         // http://nesdev.com/6502_cpu.txt says +1 and so does nintendulator
         if (((new_addr) & 0xff00) != ((new_addr - rel) & 0xff00)) cycle += 1;
@@ -748,14 +748,14 @@ void nes_cpu::AND(nes_addr_mode addr_mode)
     uint8_t val = read_operand(op);
     A() &= val;
 
-    // flags    
+    // flags
     calc_alu_flag(A());
-    
+
     // cycle count
     step_cpu(get_cpu_cycle(op, addr_mode));
 }
 
-// Compare 
+// Compare
 void nes_cpu::CMP(nes_addr_mode addr_mode)
 {
     operand_t op = decode_operand(addr_mode);
@@ -772,7 +772,7 @@ void nes_cpu::CMP(nes_addr_mode addr_mode)
     step_cpu(get_cpu_cycle(op, addr_mode));
 }
 
-// Exclusive OR 
+// Exclusive OR
 void nes_cpu::EOR(nes_addr_mode addr_mode)
 {
     operand_t op = decode_operand(addr_mode);
@@ -834,7 +834,7 @@ void nes_cpu::LDA(nes_addr_mode addr_mode)
 }
 
 // ASL - Arithmetic shift left
-void nes_cpu::ASL(nes_addr_mode addr_mode) 
+void nes_cpu::ASL(nes_addr_mode addr_mode)
 {
     operand_t op = decode_operand(addr_mode);
     uint8_t val = read_operand(op);
@@ -844,9 +844,9 @@ void nes_cpu::ASL(nes_addr_mode addr_mode)
     // flags
     set_carry_flag(val & 0x80);
 
-    // @DOCBUG: 
+    // @DOCBUG:
     // http://obelisk.me.uk/6502/reference.html#ASL incorrectly states ASL detects A == 0
-    set_zero_flag(new_val == 0); 
+    set_zero_flag(new_val == 0);
     set_negative_flag(new_val & 0x80);
 
     // cycle count
@@ -872,25 +872,25 @@ void nes_cpu::branch(bool cond, nes_addr_mode addr_mode)
 }
 
 // BCC - Branch if Carry Clear
-void nes_cpu::BCC(nes_addr_mode addr_mode) 
+void nes_cpu::BCC(nes_addr_mode addr_mode)
 {
     branch(!get_carry(), addr_mode);
 }
 
-// BCS - Branch if Carry Set 
-void nes_cpu::BCS(nes_addr_mode addr_mode) 
+// BCS - Branch if Carry Set
+void nes_cpu::BCS(nes_addr_mode addr_mode)
 {
     branch(get_carry(), addr_mode);
 }
 
 // BEQ - Branch if Equal
-void nes_cpu::BEQ(nes_addr_mode addr_mode) 
+void nes_cpu::BEQ(nes_addr_mode addr_mode)
 {
     branch(is_zero(), addr_mode);
 }
 
 // BIT - Bit test
-void nes_cpu::BIT(nes_addr_mode addr_mode) 
+void nes_cpu::BIT(nes_addr_mode addr_mode)
 {
     operand_t op = decode_operand(addr_mode);
     uint8_t val = read_operand(op);
@@ -906,25 +906,25 @@ void nes_cpu::BIT(nes_addr_mode addr_mode)
 }
 
 // BMI - Branch if minus
-void nes_cpu::BMI(nes_addr_mode addr_mode) 
+void nes_cpu::BMI(nes_addr_mode addr_mode)
 {
     branch(is_negative(), addr_mode);
 }
 
 // BNE - Branch if not equal
-void nes_cpu::BNE(nes_addr_mode addr_mode) 
+void nes_cpu::BNE(nes_addr_mode addr_mode)
 {
     branch(!is_zero(), addr_mode);
 }
 
-// BPL - Branch if positive 
-void nes_cpu::BPL(nes_addr_mode addr_mode) 
+// BPL - Branch if positive
+void nes_cpu::BPL(nes_addr_mode addr_mode)
 {
     branch(!is_negative(), addr_mode);
 }
 
 // BRK - Force interrupt
-void nes_cpu::BRK(nes_addr_mode addr_mode) 
+void nes_cpu::BRK(nes_addr_mode addr_mode)
 {
     // cycle count
     step_cpu(7);
@@ -933,13 +933,13 @@ void nes_cpu::BRK(nes_addr_mode addr_mode)
 }
 
 // BVC - Branch if overflow clear
-void nes_cpu::BVC(nes_addr_mode addr_mode) 
+void nes_cpu::BVC(nes_addr_mode addr_mode)
 {
     branch(!is_overflow(), addr_mode);
 }
 
 // BVS - Branch if overflow set
-void nes_cpu::BVS(nes_addr_mode addr_mode) 
+void nes_cpu::BVS(nes_addr_mode addr_mode)
 {
     branch(is_overflow(), addr_mode);
 }
@@ -957,7 +957,7 @@ void nes_cpu::CLI(nes_addr_mode addr_mode) { set_interrupt_flag(false); step_cpu
 void nes_cpu::CLV(nes_addr_mode addr_mode) { set_overflow_flag(false); step_cpu(nes_cpu_cycle_t(2)); }
 
 // CPX - Compare X register
-void nes_cpu::CPX(nes_addr_mode addr_mode) 
+void nes_cpu::CPX(nes_addr_mode addr_mode)
 {
     auto op = decode_operand(addr_mode);
     uint8_t val = read_operand(op);
@@ -974,7 +974,7 @@ void nes_cpu::CPX(nes_addr_mode addr_mode)
 }
 
 // CPY - Compare Y register
-void nes_cpu::CPY(nes_addr_mode addr_mode) 
+void nes_cpu::CPY(nes_addr_mode addr_mode)
 {
     auto op = decode_operand(addr_mode);
     uint8_t val = read_operand(op);;
@@ -991,7 +991,7 @@ void nes_cpu::CPY(nes_addr_mode addr_mode)
 }
 
 // DEC - Decrement memory
-void nes_cpu::DEC(nes_addr_mode addr_mode) 
+void nes_cpu::DEC(nes_addr_mode addr_mode)
 {
     uint16_t addr = decode_operand_addr(addr_mode);
     uint8_t new_val = peek(addr) - 1;
@@ -999,20 +999,20 @@ void nes_cpu::DEC(nes_addr_mode addr_mode)
 
     calc_alu_flag(new_val);
 
-    BEGIN_CYCLE() 
+    BEGIN_CYCLE()
     {
         IS_CYCLE(zp, 5);
         IS_CYCLE(zp_ind_x, 6);
         IS_CYCLE(abs, 6);
         IS_CYCLE(abs_x, 7);
-    } 
+    }
     END_CYCLE()
 }
 
 // DEX - Decrement X register
-void nes_cpu::DEX(nes_addr_mode addr_mode) 
-{ 
-    X()--; 
+void nes_cpu::DEX(nes_addr_mode addr_mode)
+{
+    X()--;
     calc_alu_flag(X());
 
     // cycle count
@@ -1020,17 +1020,17 @@ void nes_cpu::DEX(nes_addr_mode addr_mode)
 }
 
 // DEY - Decrement Y register
-void nes_cpu::DEY(nes_addr_mode addr_mode) 
-{ 
-    Y()--; 
+void nes_cpu::DEY(nes_addr_mode addr_mode)
+{
+    Y()--;
     calc_alu_flag(Y());
-    
+
     // cycle count
     step_cpu(nes_cpu_cycle_t(2));
 }
 
 // INC - Increment memory
-void nes_cpu::INC(nes_addr_mode addr_mode) 
+void nes_cpu::INC(nes_addr_mode addr_mode)
 {
     uint16_t addr = decode_operand_addr(addr_mode);
     uint8_t new_val = peek(addr) + 1;
@@ -1039,18 +1039,18 @@ void nes_cpu::INC(nes_addr_mode addr_mode)
     // flags
     calc_alu_flag(new_val);
 
-    BEGIN_CYCLE() 
+    BEGIN_CYCLE()
     {
         IS_CYCLE(zp, 5);
         IS_CYCLE(zp_ind_x, 6);
         IS_CYCLE(abs, 6);
         IS_CYCLE(abs_x, 7);
-    } 
+    }
     END_CYCLE()
 }
 
 // INX - Increment X
-void nes_cpu::INX(nes_addr_mode addr_mode) 
+void nes_cpu::INX(nes_addr_mode addr_mode)
 {
     X() = X() + 1;
 
@@ -1060,17 +1060,17 @@ void nes_cpu::INX(nes_addr_mode addr_mode)
 }
 
 // INY - Increment Y
-void nes_cpu::INY(nes_addr_mode addr_mode) 
+void nes_cpu::INY(nes_addr_mode addr_mode)
 {
     Y() = Y() + 1;
 
     calc_alu_flag(Y());
-    
+
     step_cpu(nes_cpu_cycle_t(2));
 }
 
-// JMP - Jump 
-void nes_cpu::JMP(nes_addr_mode addr_mode) 
+// JMP - Jump
+void nes_cpu::JMP(nes_addr_mode addr_mode)
 {
     assert(addr_mode == nes_addr_mode_abs_jmp || addr_mode == nes_addr_mode_ind_jmp);
 
@@ -1082,13 +1082,13 @@ void nes_cpu::JMP(nes_addr_mode addr_mode)
     }
 
     PC() = addr;
-    
+
     // No impact to flags
     step_cpu(addr_mode == nes_addr_mode_abs_jmp ? 3 : 5);
 }
 
 // JSR - Jump to subroutine
-void nes_cpu::JSR(nes_addr_mode addr_mode) 
+void nes_cpu::JSR(nes_addr_mode addr_mode)
 {
     // note: we push the actual return address -1, which is the current place (before decoding the 16-bit addr) + 1
     push_word(PC() + 1);
@@ -1099,7 +1099,7 @@ void nes_cpu::JSR(nes_addr_mode addr_mode)
 }
 
 // LDX - Load X register
-void nes_cpu::LDX(nes_addr_mode addr_mode) 
+void nes_cpu::LDX(nes_addr_mode addr_mode)
 {
     operand_t op = decode_operand(addr_mode);
     X() = read_operand(op);
@@ -1111,7 +1111,7 @@ void nes_cpu::LDX(nes_addr_mode addr_mode)
 }
 
 // LDY - Load Y register
-void nes_cpu::LDY(nes_addr_mode addr_mode) 
+void nes_cpu::LDY(nes_addr_mode addr_mode)
 {
     operand_t op = decode_operand(addr_mode);
     Y() = read_operand(op);
@@ -1133,7 +1133,7 @@ void nes_cpu::LSR(nes_addr_mode addr_mode)
     // flags
     set_carry_flag(val & 0x1);
 
-    // @DOCBUG: 
+    // @DOCBUG:
     // http://obelisk.me.uk/6502/reference.html#LSR incorrectly states ASL detects A == 0
     set_zero_flag(new_val == 0);
     set_negative_flag(new_val & 0x80);
@@ -1143,7 +1143,7 @@ void nes_cpu::LSR(nes_addr_mode addr_mode)
 }
 
 // NOP - NOP
-void nes_cpu::NOP(nes_addr_mode addr_mode) 
+void nes_cpu::NOP(nes_addr_mode addr_mode)
 {
     // For effective NOP (op codes that are "effectively" no-op but not the real NOP 0xea)
     // We always needed to decode the parameter
@@ -1159,7 +1159,7 @@ void nes_cpu::NOP(nes_addr_mode addr_mode)
 }
 
 // PHA - Push accumulator
-void nes_cpu::PHA(nes_addr_mode addr_mode) 
+void nes_cpu::PHA(nes_addr_mode addr_mode)
 {
     push_byte(A());
 
@@ -1167,17 +1167,17 @@ void nes_cpu::PHA(nes_addr_mode addr_mode)
 }
 
 // PHP - Push processor status
-void nes_cpu::PHP(nes_addr_mode addr_mode) 
+void nes_cpu::PHP(nes_addr_mode addr_mode)
 {
     // http://wiki.nesdev.com/w/index.php/CPU_status_flag_behavior
     // Set bit 5 and 4 to 1 when copy status into from PHP
     push_byte(P() | 0x30);
-    
+
     step_cpu(3);
 }
 
 // PLA - Pull accumulator
-void nes_cpu::PLA(nes_addr_mode addr_mode) 
+void nes_cpu::PLA(nes_addr_mode addr_mode)
 {
     A() = pop_byte();
 
@@ -1187,7 +1187,7 @@ void nes_cpu::PLA(nes_addr_mode addr_mode)
 }
 
 // PLP - Pull processor status
-void nes_cpu::PLP(nes_addr_mode addr_mode) 
+void nes_cpu::PLP(nes_addr_mode addr_mode)
 {
     _PLP();
     step_cpu(4);
@@ -1242,7 +1242,7 @@ void nes_cpu::ROR(nes_addr_mode addr_mode)
 }
 
 // RTI - Return from interrupt
-void nes_cpu::RTI(nes_addr_mode addr_mode) 
+void nes_cpu::RTI(nes_addr_mode addr_mode)
 {
     _PLP();
 
@@ -1253,7 +1253,7 @@ void nes_cpu::RTI(nes_addr_mode addr_mode)
 }
 
 // RTS - Return from subroutine
-void nes_cpu::RTS(nes_addr_mode addr_mode) 
+void nes_cpu::RTS(nes_addr_mode addr_mode)
 {
     // See JSR - we pushed actual return address - 1
     uint16_t addr = pop_word() + 1;
@@ -1271,7 +1271,7 @@ void nes_cpu::SED(nes_addr_mode addr_mode) { set_decimal_flag(true); step_cpu(ne
 // SEI - Set interrupt disable
 void nes_cpu::SEI(nes_addr_mode addr_mode) { set_interrupt_flag(true); step_cpu(nes_cpu_cycle_t(2)); }
 
-// Store Accumulator  
+// Store Accumulator
 void nes_cpu::STA(nes_addr_mode addr_mode)
 {
     operand_t op = decode_operand(addr_mode);
@@ -1287,7 +1287,7 @@ void nes_cpu::STA(nes_addr_mode addr_mode)
 }
 
 // STX - Store X
-void nes_cpu::STX(nes_addr_mode addr_mode) 
+void nes_cpu::STX(nes_addr_mode addr_mode)
 {
     operand_t op = decode_operand(addr_mode);
     assert(op.kind == operand_kind::operand_kind_addr);
@@ -1314,8 +1314,8 @@ void nes_cpu::STY(nes_addr_mode addr_mode)
     step_cpu(get_cpu_cycle(op, addr_mode));
 }
 
-// TAX - Transfer accumulator to X 
-void nes_cpu::TAX(nes_addr_mode addr_mode) 
+// TAX - Transfer accumulator to X
+void nes_cpu::TAX(nes_addr_mode addr_mode)
 {
     X() = A();
 
@@ -1334,8 +1334,8 @@ void nes_cpu::TAY(nes_addr_mode addr_mode)
     step_cpu(nes_cpu_cycle_t(2));
 }
 
-// TSX - Transfer stack pointer to X 
-void nes_cpu::TSX(nes_addr_mode addr_mode) 
+// TSX - Transfer stack pointer to X
+void nes_cpu::TSX(nes_addr_mode addr_mode)
 {
     X() = S();
 
@@ -1365,7 +1365,7 @@ void nes_cpu::TXS(nes_addr_mode addr_mode)
 }
 
 // TYA - Transfer Y to accumulator
-void nes_cpu::TYA(nes_addr_mode addr_mode) 
+void nes_cpu::TYA(nes_addr_mode addr_mode)
 {
     A() = Y();
 
@@ -1405,7 +1405,7 @@ void nes_cpu::LAX(nes_addr_mode addr_mode)
 }
 
 // SAX - AND A X
-void nes_cpu::SAX(nes_addr_mode addr_mode) 
+void nes_cpu::SAX(nes_addr_mode addr_mode)
 {
     operand_t op = decode_operand(addr_mode);
     write_operand(op, A() & X());
@@ -1415,7 +1415,7 @@ void nes_cpu::SAX(nes_addr_mode addr_mode)
 }
 
 // DCP - DEC value then CMP value
-void nes_cpu::DCP(nes_addr_mode addr_mode) 
+void nes_cpu::DCP(nes_addr_mode addr_mode)
 {
     // DEC
     auto op = decode_operand(addr_mode);
@@ -1435,8 +1435,8 @@ void nes_cpu::DCP(nes_addr_mode addr_mode)
     step_cpu(get_cpu_cycle(op, addr_mode) + nes_cpu_cycle_t(2));
 }
 
-// ISC - INC value then SBC value 
-void nes_cpu::ISC(nes_addr_mode addr_mode) 
+// ISC - INC value then SBC value
+void nes_cpu::ISC(nes_addr_mode addr_mode)
 {
     // INC
     auto op = decode_operand(addr_mode);
@@ -1453,7 +1453,7 @@ void nes_cpu::ISC(nes_addr_mode addr_mode)
 }
 
 // RLA - ROL value then AND value
-void nes_cpu::RLA(nes_addr_mode addr_mode) 
+void nes_cpu::RLA(nes_addr_mode addr_mode)
 {
     // ROL
     operand_t op = decode_operand(addr_mode);
@@ -1466,7 +1466,7 @@ void nes_cpu::RLA(nes_addr_mode addr_mode)
     // AND
     A() &= new_val;
 
-    // flags    
+    // flags
     calc_alu_flag(A());
 
     // cycle count forces page crossing behavior (then +2)
@@ -1474,8 +1474,8 @@ void nes_cpu::RLA(nes_addr_mode addr_mode)
     step_cpu(get_cpu_cycle(op, addr_mode) + nes_cpu_cycle_t(2));
 }
 
-void nes_cpu::RRA(nes_addr_mode addr_mode) 
-{ 
+void nes_cpu::RRA(nes_addr_mode addr_mode)
+{
     // ROR
     operand_t op = decode_operand(addr_mode);
     uint8_t val = read_operand(op);
@@ -1493,8 +1493,8 @@ void nes_cpu::RRA(nes_addr_mode addr_mode)
 }
 
 // SLO - ASL value then ORA value
-void nes_cpu::SLO(nes_addr_mode addr_mode) 
-{ 
+void nes_cpu::SLO(nes_addr_mode addr_mode)
+{
     // ASL
     operand_t op = decode_operand(addr_mode);
     uint8_t val = read_operand(op);
@@ -1514,7 +1514,7 @@ void nes_cpu::SLO(nes_addr_mode addr_mode)
 }
 
 // SRE - LSR value then EOR value
-void nes_cpu::SRE(nes_addr_mode addr_mode) 
+void nes_cpu::SRE(nes_addr_mode addr_mode)
 {
     // LSR
     operand_t op = decode_operand(addr_mode);

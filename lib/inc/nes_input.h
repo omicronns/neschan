@@ -3,11 +3,15 @@
 // Reading NES controller requires setting a strobe bit, clear it, then read the I/O register 8 times
 // http://wiki.nesdev.com/w/index.php/Standard_controller
 
-#include <cstdint>
+#include <memory>
+
+#include <nes_component.h>
+
+using namespace std;
 
 #define NES_CONTROLLER_STROBE_BIT 0x1
 
-// The controller are reported always in bit 0 in the order of 
+// The controller are reported always in bit 0 in the order of
 // A, B, Select, Start, Up, Down, Left, Right
 // When shifting them leftwards, you get the following bits
 enum nes_button_flags : uint8_t
@@ -87,7 +91,7 @@ public :
 
     uint8_t read_CONTROLLER(uint8_t id)
     {
-        // If strobe bit is on, we'll reload every time which effectively hand out button 0 (A) every single 
+        // If strobe bit is on, we'll reload every time which effectively hand out button 0 (A) every single
         // time. People would typically pulse the bit and then read the controller I/O register 8(!!) times
         if (_strobe_on)
             reload();

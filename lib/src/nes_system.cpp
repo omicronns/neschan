@@ -1,8 +1,7 @@
-#include "stdafx.h"
-
 #include "nes_cpu.h"
 #include "nes_system.h"
 #include "nes_ppu.h"
+#include "nes_input.h"
 
 using namespace std;
 

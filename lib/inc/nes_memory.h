@@ -4,6 +4,7 @@
 #include <cassert>
 #include <memory>
 
+#include <common.h>
 #include <nes_component.h>
 #include <nes_mapper.h>
 
@@ -13,6 +14,7 @@ using namespace std;
 
 class nes_mapper;
 class nes_ppu;
+class nes_input;
 
 class nes_memory : public nes_component
 {

@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <memory>
 
+#include <common.h>
 #include <nes_component.h>
 #include <nes_cycle.h>
 #include <nes_trace.h>
@@ -66,7 +67,7 @@
 #define PPUSTATUS_LATCH_MASK 0x1f
 
 // 0: no more than 8 sprites appear on a scanline
-// 1: otherwise. however, there are bugs in hardware implementation that it can be 
+// 1: otherwise. however, there are bugs in hardware implementation that it can be
 // set incorrectly for false positive and false negatives
 // set during sprite evaluation and clear at dot 1 of pre-render line
 #define PPUSTATUS_SPRITE_OVERFLOW 0x20
@@ -87,7 +88,7 @@
 
 // Only max of 8 sprites can be drawn in one scanlinekkkkk
 #define PPU_ACTIVE_SPRITE_MAX 0x8
-#define PPU_SPRITE_MAX 64 
+#define PPU_SPRITE_MAX 64
 
 #define PPU_SPRITE_ATTR_BIT32_MASK 0x3
 #define PPU_SPRITE_ATTR_BEHIND_BG 0x20
@@ -123,12 +124,12 @@ private :
 class nes_ppu : public nes_component
 {
 public :
-    nes_ppu() 
+    nes_ppu()
     {
         _vram = make_unique<uint8_t[]>(PPU_VRAM_SIZE);
         _oam = make_unique<uint8_t[]>(PPU_OAM_SIZE);
     }
-    
+
     ~nes_ppu();
 
 public :
@@ -152,10 +153,10 @@ public :
 
     bool is_ready() { return _master_cycle > nes_ppu_cycle_t(29658); }
 
-    void stop_after_frame(uint32_t frame) 
+    void stop_after_frame(uint32_t frame)
     {
         _auto_stop = true;
-        _stop_after_frame = frame; 
+        _stop_after_frame = frame;
     }
 
     bool is_render_off() { return !_show_bg && !_show_sprites; }
@@ -199,7 +200,7 @@ public :
     void write_byte(uint16_t addr, uint8_t val)
     {
         redirect_addr(addr);
-        
+
         if (addr >= PPU_VRAM_SIZE)
             return;
 
@@ -238,7 +239,7 @@ public :
             else if (_mirroring_flags == nes_mapper_flags_one_screen_upper_bank)
                 addr = (addr & 0xf3ff) | 0x400; // $2400 mapped to all the other 3
             else assert(!"Unsupported mirroring modes");
-        } 
+        }
         else if (addr >= 0x3000)
         {
             // 0x3000~0x3f00 mirrors to 0x2000~0x2f00
@@ -259,7 +260,7 @@ public :
     //
     void write_latch(uint8_t val)
     {
-        // Don't update latch in "protected reads"  
+        // Don't update latch in "protected reads"
         if (_protect_register) return;
 
         _latch = val;
@@ -272,7 +273,7 @@ public :
     }
 
     void write_PPUCTRL(uint8_t val)
-    {   
+    {
         NES_TRACE4("[NES_PPU] write_PPUCTRL(Val=" << std::hex << (uint32_t)val << ")");
 
         // Ignore write before PPU is ready
@@ -480,7 +481,7 @@ private :
 
         return read_byte(tile_addr | (bitplane << 3) | tile_row_index);
     }
-   
+
     uint8_t read_pattern_table_column_8x16_sprite(uint8_t tile_index, uint8_t bitplane, uint8_t tile_row_index)
     {
         // TTTTTTB - T is tile number and B is tile pattern table select $0000 or $1000
@@ -534,7 +535,7 @@ private :
     //    +++----------------- fine Y scroll
     uint16_t _ppu_addr;                 // the "v" register - see http://wiki.nesdev.com/w/index.php/PPU_scrolling
     uint16_t _temp_ppu_addr;            // the "t" register - see http://wiki.nesdev.com/w/index.php/PPU_scrolling
-    uint8_t  _fine_x_scroll;            // the "x" register - see http://wiki.nesdev.com/w/index.php/PPU_scrolling 
+    uint8_t  _fine_x_scroll;            // the "x" register - see http://wiki.nesdev.com/w/index.php/PPU_scrolling
     uint8_t _scroll_y;                  // cached _scroll_y value
 
     // PPUDATA
@@ -550,7 +551,7 @@ private :
     int _auto_stop;                     // stop after X frames - useful for testing
 
     // rendering states
-    uint8_t _tile_index;                // tile index from name table - it consists of 
+    uint8_t _tile_index;                // tile index from name table - it consists of
     uint8_t _tile_palette_bit32;        // palette index bit 3/2 from attribute table
     uint8_t _bitplane0;                 // bitplane0 of current tile from pattern table
     uint8_t *_frame_buffer;             // entire frame buffer - only 4 bit is used

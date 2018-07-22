@@ -1,4 +1,8 @@
-#include "stdafx.h"
+#include <nes_memory.h>
+#include <nes_mapper.h>
+#include <nes_system.h>
+#include <nes_ppu.h>
+#include <nes_input.h>
 
 void nes_memory::power_on(nes_system *system)
 {

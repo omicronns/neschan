@@ -1,4 +1,8 @@
-#include "stdafx.h"
+#include <nes_mapper.h>
+#include <nes_memory.h>
+#include <nes_ppu.h>
+
+#include <cstring>
 
 //
 // Called when mapper is loaded into memory

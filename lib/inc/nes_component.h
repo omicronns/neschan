@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cstdint>
-
 #include "nes_cycle.h"
 
 class nes_system;

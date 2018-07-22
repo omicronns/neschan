@@ -1,5 +1,4 @@
-#include "stdafx.h"
-
+#include "nes_cpu.h"
 #include "nes_ppu.h"
 #include "nes_system.h"
 #include "nes_memory.h"
@@ -117,7 +116,7 @@ void nes_ppu::init()
 
     _last_sprite_id = 0;
     _has_sprite_0 = 0;
-    _mask_oam_read = 0; 
+    _mask_oam_read = 0;
 }
 
 void nes_ppu::reset()
@@ -181,14 +180,14 @@ void nes_ppu::fetch_tile()
 
         // each quadrant has 2x2 tile and each row/column has 4 tiles, so divide by 2 (& 0x2 is faster)
         uint8_t _quadrant_id = (tile_row & 0x2) + ((tile_column & 0x2) >> 1);
-        uint8_t color_bit32 = (color_byte & (0x3 << (_quadrant_id * 2))) >> (_quadrant_id * 2); 
+        uint8_t color_bit32 = (color_byte & (0x3 << (_quadrant_id * 2))) >> (_quadrant_id * 2);
         _tile_palette_bit32 = color_bit32 << 2;
     }
     else if (data_access_cycle == nes_ppu_cycle_t(4))
     {
         // Pattern table is area of memory define all the tiles make up background and sprites.
-        // Think it as "lego blocks" that you can build up your background and sprites which 
-        // simply consists of indexes. It is quite convoluted by today's standards but it is 
+        // Think it as "lego blocks" that you can build up your background and sprites which
+        // simply consists of indexes. It is quite convoluted by today's standards but it is
         // just a space saving technique.
         // http://wiki.nesdev.com/w/index.php/PPU_pattern_tables
         _bitplane0 = read_pattern_table_column(/* sprite = */false, _tile_index, /* bitplane = */ 0, tile_row_index);
@@ -203,7 +202,7 @@ void nes_ppu::fetch_tile()
         // high bit -> low bit
         int start_bit = 7;
         int end_bit = 0;
-        
+
         int tile = (int)(scanline_render_cycle.count() - /* current_access_cycle */ 6) / 8;
         if (_fine_x_scroll > 0)
         {
@@ -270,7 +269,7 @@ void nes_ppu::fetch_tile_pipeline()
     {
     }
     else if (_scanline_cycle < nes_ppu_cycle_t(257))
-    {        
+    {
         fetch_tile();
 
         if (_scanline_cycle == nes_ppu_cycle_t(256))
@@ -386,7 +385,7 @@ void nes_ppu::fetch_sprite_pipeline()
         else
         {
             // odd cycle - read from primary OAM
-            _sprite_pos_y = get_sprite(sprite_id)->pos_y;            
+            _sprite_pos_y = get_sprite(sprite_id)->pos_y;
         }
     }
     else if (_scanline_cycle < nes_ppu_cycle_t(321))
@@ -487,7 +486,7 @@ void nes_ppu::fetch_sprite(uint8_t sprite_id)
 void nes_ppu::step_to(nes_cycle_t count)
 {
     while (_master_cycle < count && !_system->stop_requested())
-    {     
+    {
         step_ppu(nes_ppu_cycle_t(1));
 
         if (_cur_scanline <= 239)
