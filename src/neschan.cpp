@@ -241,16 +241,23 @@ int main(int argc, char *argv[])
 
     int num_joysticks = SDL_NumJoysticks();
     NES_LOG("[NESCHAN] " << num_joysticks << " JoySticks detected.");
+
+    sdl_keyboard_controller input_kbd;
+    vector<shared_ptr<sdl_game_controller>> inputs;
+
     if (num_joysticks == 0)
     {
-        system.input()->register_input(0, std::make_shared<sdl_keyboard_controller>());
+        system.input()->register_input(0, &input_kbd);
     }
     else
     {
         for (int i = 0; i < num_joysticks; i++)
         {
             if (i < NES_MAX_PLAYER)
-                system.input()->register_input(i, std::make_shared<sdl_game_controller>(i));
+            {
+                inputs.push_back(make_shared<sdl_game_controller>(i));
+                system.input()->register_input(i, inputs.back().get());
+            }
         }
     }
 
