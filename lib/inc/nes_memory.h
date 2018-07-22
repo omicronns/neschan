@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vector>
+#include <array>
 #include <cassert>
 #include <memory>
 
@@ -17,11 +17,6 @@ class nes_ppu;
 class nes_memory : public nes_component
 {
 public :
-    nes_memory()
-    {
-        _ram.reserve(RAM_SIZE);
-    }
-
     bool is_io_reg(uint16_t addr)
     {
         // $2000~$2007
@@ -108,7 +103,7 @@ public :
     }
 
 private :
-    vector<uint8_t>        _ram;
+    array<uint8_t, RAM_SIZE> _ram;
     shared_ptr<nes_mapper> _mapper;
 
     nes_system *_system;

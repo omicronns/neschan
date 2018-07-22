@@ -5,7 +5,7 @@
 
 #pragma once
 
-#ifdef _WIN32 
+#ifdef _WIN32
 #include "targetver.h"
 #endif
 
@@ -27,4 +27,3 @@
 #include <nes_ppu.h>
 #include <nes_cpu.h>
 #include <nes_input.h>
-#include <nes_apu.h>
