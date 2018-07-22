@@ -1,17 +1,13 @@
 #pragma once
 
-#include <cstdint>
-#include <memory>
 
 #include "nes_component.h"
+#include "nes_cpu.h"
+#include "nes_ppu.h"
+#include "nes_memory.h"
+#include "nes_input.h"
 
 using namespace std;
-
-class nes_cpu;
-class nes_memory;
-class nes_apu;
-class nes_ppu;
-class nes_input;
 
 enum nes_rom_exec_mode
 {
@@ -33,10 +29,6 @@ enum nes_rom_exec_mode
 class nes_system
 {
 public :
-    nes_system();
-    ~nes_system();
-
-public :
     void power_on();
     void reset();
 
@@ -47,10 +39,10 @@ public :
     void load_rom(uint8_t *rom_data, std::size_t rom_size, nes_rom_exec_mode mode);
     void run_rom(uint8_t *rom_data, std::size_t rom_size, nes_rom_exec_mode mode);
 
-    nes_cpu     *cpu()      { return _cpu.get();   }
-    nes_memory  *ram()      { return _ram.get();   }
-    nes_ppu     *ppu()      { return _ppu.get();   }
-    nes_input   *input()    { return _input.get(); }
+    nes_cpu     *cpu()      { return &_cpu;   }
+    nes_memory  *ram()      { return &_ram;   }
+    nes_ppu     *ppu()      { return &_ppu;   }
+    nes_input   *input()    { return &_input; }
 
 public :
     //
@@ -76,10 +68,10 @@ private :
 private :
     nes_cycle_t _master_cycle;              // keep count of current cycle
 
-    unique_ptr<nes_cpu> _cpu;
-    unique_ptr<nes_memory> _ram;
-    unique_ptr<nes_ppu> _ppu;
-    unique_ptr<nes_input> _input;
+    nes_cpu _cpu;
+    nes_memory _ram;
+    nes_ppu _ppu;
+    nes_input _input;
 
     bool _stop_requested;                   // useful for internal testing, or synchronization to rendering
 };
