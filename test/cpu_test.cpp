@@ -5,6 +5,8 @@
 #include "nes_mapper.h"
 #include "nes_system.h"
 
+#include "rom_runner.h"
+
 using namespace std;
 
 TEST_CASE("CPU tests") {
@@ -28,7 +30,7 @@ TEST_CASE("CPU tests") {
                 0xe6, 0x21,     // INC $21      -> $21=#$12
                 0xa4, 0x21,     // LDY $21      -> Y=#$12
                 0xc8,           // INY          -> Y=#$13
-                0x00,           // BRK 
+                0x00,           // BRK
             },
             0x1000);
 
@@ -52,9 +54,9 @@ TEST_CASE("CPU tests") {
                 0x85, 0x30,     // STA $30      -> $30 = #$ff
                 0xa9, 0x01,     // LDA #$1
                 0x65, 0x30,     // ADC $30      -> carry, A = 0
-                0xa9, 0x01,     // LDA #$1      
+                0xa9, 0x01,     // LDA #$1
                 0x65, 0x30,     // ADC $30      -> carry, A = 1
-                0x00,           // BRK 
+                0x00,           // BRK
             },
             0x1000);
 
@@ -69,8 +71,8 @@ TEST_CASE("CPU tests") {
 
         system.power_on();
 
-        system.run_rom("./roms/nestest/nestest.nes", nes_rom_exec_mode_direct);
-        
+        run_rom(&system, "./roms/nestest/nestest.nes", nes_rom_exec_mode_direct);
+
         auto cpu = system.cpu();
 
         // Check we've proceeded to the end of the ROM
@@ -88,9 +90,9 @@ TEST_CASE("CPU tests") {
         system.power_on(); \
         auto cpu = system.cpu(); \
         cpu->stop_at_infinite_loop(); \
-        system.run_rom("./roms/instr_test-v5/rom_singles/" test ".nes", nes_rom_exec_mode_reset); \
+        run_rom(&system, "./roms/instr_test-v5/rom_singles/" test ".nes", nes_rom_exec_mode_reset); \
         CHECK(cpu->peek(0x6000) == 0); \
-    } 
+    }
     INSTR_V5_TEST_CASE("01-basics")
     INSTR_V5_TEST_CASE("02-implied")
     // INSTR_V5_TEST_CASE("03-immediate")

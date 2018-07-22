@@ -14,7 +14,7 @@ uint32_t make_argb(uint8_t r, uint8_t g, uint8_t b)
 
 #define JOYSTICK_DEADZONE 8000
 
-class neschan_exception : runtime_error 
+class neschan_exception : runtime_error
 {
 public :
     neschan_exception(const char *msg)
@@ -138,6 +138,23 @@ const SDL_GameControllerButton sdl_game_controller::s_buttons[] = {
     SDL_CONTROLLER_BUTTON_DPAD_RIGHT
 };
 
+void load_rom(nes_system *system, const char *path, nes_rom_exec_mode mode) {
+    ifstream file;
+    file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+    file.open(path, std::ifstream::in | std::ifstream::binary);
+
+    std::vector<uint8_t> rom_data;
+
+    file.seekg(0, std::ios::end);
+    rom_data.reserve(file.tellg());
+    file.seekg(0, std::ios::beg);
+
+    rom_data.assign((std::istreambuf_iterator<char>(file)),
+                     std::istreambuf_iterator<char>());
+
+    system->load_rom((const char *)rom_data.data(), rom_data.size(), mode);
+}
+
 int main(int argc, char *argv[])
 {
     // Initialize SDL with everything (video, audio, joystick, events, etc)
@@ -152,15 +169,15 @@ int main(int argc, char *argv[])
     }
 
     const char *error = nullptr;
-    if (argc != 2)
-    {
-        SDL_ShowSimpleMessageBox(
-            SDL_MESSAGEBOX_ERROR,
-            "Usage error",
-            "Usage: neschan <rom_file_path>", 
-            NULL);
-        return -1;
-    }
+   if (argc != 2)
+   {
+       SDL_ShowSimpleMessageBox(
+           SDL_MESSAGEBOX_ERROR,
+           "Usage error",
+           "Usage: neschan <rom_file_path>",
+           NULL);
+       return -1;
+   }
 
     SDL_Window *sdl_window;
     SDL_Renderer *sdl_renderer;
@@ -182,10 +199,10 @@ int main(int argc, char *argv[])
     nes_system system;
 
     system.power_on();
-    
+
     try
     {
-        system.load_rom(argv[1], nes_rom_exec_mode_reset);
+        load_rom(&system, argv[1], nes_rom_exec_mode_reset);
     }
     catch (std::exception ex)
     {
@@ -199,12 +216,24 @@ int main(int argc, char *argv[])
 
     vector<uint32_t> pixels(PPU_SCREEN_Y * PPU_SCREEN_X);
 
-    static uint32_t palette[] = 
+    static uint32_t palette[] =
     {
-        make_argb(84,  84,  84),    make_argb(0,  30, 116),    make_argb(8,  16, 144),    make_argb(48,   0, 136),   make_argb(68,   0, 100),   make_argb(92,   0,  48),   make_argb(84,   4,   0),   make_argb(60,  24,   0),   make_argb(32,  42,   0),   make_argb(8,  58,   0),   make_argb(0,  64,   0),    make_argb(0,  60,   0),    make_argb(0,  50,  60),    make_argb(0,   0,   0),   make_argb(0, 0, 0), make_argb(0, 0, 0),
-        make_argb(152, 150, 152),   make_argb(8,  76, 196),    make_argb(48,  50, 236),   make_argb(92,  30, 228),   make_argb(136,  20, 176),  make_argb(160,  20, 100),  make_argb(152,  34,  32),  make_argb(120,  60,   0),  make_argb(84,  90,   0),   make_argb(40, 114,   0),  make_argb(8, 124,   0),    make_argb(0, 118,  40),    make_argb(0, 102, 120),    make_argb(0,   0,   0),   make_argb(0, 0, 0), make_argb(0, 0, 0),
-        make_argb(236, 238, 236),   make_argb(76, 154, 236),   make_argb(120, 124, 236),  make_argb(176,  98, 236),  make_argb(228,  84, 236),  make_argb(236,  88, 180),  make_argb(236, 106, 100),  make_argb(212, 136,  32),  make_argb(160, 170,   0),  make_argb(116, 196,   0), make_argb(76, 208,  32),   make_argb(56, 204, 108),   make_argb(56, 180, 204),   make_argb(60,  60,  60),  make_argb(0, 0, 0), make_argb(0, 0, 0),
-        make_argb(236, 238, 236),   make_argb(168, 204, 236),  make_argb(188, 188, 236),  make_argb(212, 178, 236),  make_argb(236, 174, 236),  make_argb(236, 174, 212),  make_argb(236, 180, 176),  make_argb(228, 196, 144),  make_argb(204, 210, 120),  make_argb(180, 222, 120), make_argb(168, 226, 144),  make_argb(152, 226, 180),  make_argb(160, 214, 228),  make_argb(160, 162, 160), make_argb(0, 0, 0), make_argb(0, 0, 0)
+        make_argb(84,  84,  84),   make_argb(0,  30, 116),    make_argb(8,  16, 144),    make_argb(48,   0, 136),
+        make_argb(68,   0, 100),   make_argb(92,   0,  48),   make_argb(84,   4,   0),   make_argb(60,  24,   0),
+        make_argb(32,  42,   0),   make_argb(8,  58,   0),    make_argb(0,  64,   0),    make_argb(0,  60,   0),
+        make_argb(0,  50,  60),    make_argb(0,   0,   0),    make_argb(0, 0, 0),        make_argb(0, 0, 0),
+        make_argb(152, 150, 152),  make_argb(8,  76, 196),    make_argb(48,  50, 236),   make_argb(92,  30, 228),
+        make_argb(136,  20, 176),  make_argb(160,  20, 100),  make_argb(152,  34,  32),  make_argb(120,  60,   0),
+        make_argb(84,  90,   0),   make_argb(40, 114,   0),   make_argb(8, 124,   0),    make_argb(0, 118,  40),
+        make_argb(0, 102, 120),    make_argb(0,   0,   0),    make_argb(0, 0, 0),        make_argb(0, 0, 0),
+        make_argb(236, 238, 236),  make_argb(76, 154, 236),   make_argb(120, 124, 236),  make_argb(176,  98, 236),
+        make_argb(228,  84, 236),  make_argb(236,  88, 180),  make_argb(236, 106, 100),  make_argb(212, 136,  32),
+        make_argb(160, 170,   0),  make_argb(116, 196,   0),  make_argb(76, 208,  32),   make_argb(56, 204, 108),
+        make_argb(56, 180, 204),   make_argb(60,  60,  60),   make_argb(0, 0, 0),        make_argb(0, 0, 0),
+        make_argb(236, 238, 236),  make_argb(168, 204, 236),  make_argb(188, 188, 236),  make_argb(212, 178, 236),
+        make_argb(236, 174, 236),  make_argb(236, 174, 212),  make_argb(236, 180, 176),  make_argb(228, 196, 144),
+        make_argb(204, 210, 120),  make_argb(180, 222, 120),  make_argb(168, 226, 144),  make_argb(152, 226, 180),
+        make_argb(160, 214, 228),  make_argb(160, 162, 160),  make_argb(0, 0, 0),        make_argb(0, 0, 0)
     };
     assert(sizeof(palette) == sizeof(uint32_t) * 0x40);
 
@@ -243,7 +272,7 @@ int main(int argc, char *argv[])
             }
         }
 
-        // 
+        //
         // Calculate delta tick as the current frame
         // We ask the NES to step corresponding CPU cycles
         //

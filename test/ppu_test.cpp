@@ -5,6 +5,8 @@
 #include "nes_mapper.h"
 #include "nes_system.h"
 
+#include "rom_runner.h"
+
 using namespace std;
 
 TEST_CASE("ppu_tests") {
@@ -20,7 +22,7 @@ TEST_CASE("ppu_tests") {
         // Wait for 10 frames so that it can finish rendering - and we can use the VRAM value to validate
         system.ppu()->stop_after_frame(10);
 
-        system.run_rom("./roms/color_test/color_test.nes", nes_rom_exec_mode_reset);
+        run_rom(&system, "./roms/color_test/color_test.nes", nes_rom_exec_mode_reset);
 
         auto cpu = system.cpu();
         auto ppu = system.ppu();
@@ -40,7 +42,7 @@ TEST_CASE("ppu_tests") {
 
         system.ppu()->stop_after_frame(10);
 
-        system.run_rom("./roms/blargg_ppu_tests/vbl_clear_time.nes", nes_rom_exec_mode_reset);
+        run_rom(&system, "./roms/blargg_ppu_tests/vbl_clear_time.nes", nes_rom_exec_mode_reset);
 
         auto cpu = system.cpu();
 
@@ -54,7 +56,7 @@ TEST_CASE("ppu_tests") {
 
         system.ppu()->stop_after_frame(10);
 
-        system.run_rom("./roms/blargg_ppu_tests/sprite_ram.nes", nes_rom_exec_mode_reset);
+        run_rom(&system, "./roms/blargg_ppu_tests/sprite_ram.nes", nes_rom_exec_mode_reset);
 
         auto cpu = system.cpu();
 
@@ -64,11 +66,11 @@ TEST_CASE("ppu_tests") {
         INIT_TRACE("neschan.ppu.vram_access.log");
         cout << "Running [PPU][vram_access]..." << endl;
 
-        system.power_on(); 
+        system.power_on();
 
         system.ppu()->stop_after_frame(10);
 
-        system.run_rom("./roms/blargg_ppu_tests/vram_access.nes", nes_rom_exec_mode_reset);
+        run_rom(&system, "./roms/blargg_ppu_tests/vram_access.nes", nes_rom_exec_mode_reset);
 
         auto cpu = system.cpu();
 
@@ -82,7 +84,7 @@ TEST_CASE("ppu_tests") {
 
         system.ppu()->stop_after_frame(10);
 
-        system.run_rom("./roms/blargg_ppu_tests/palette_ram.nes", nes_rom_exec_mode_reset);
+        run_rom(&system, "./roms/blargg_ppu_tests/palette_ram.nes", nes_rom_exec_mode_reset);
 
         auto cpu = system.cpu();
 

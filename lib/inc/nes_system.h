@@ -45,13 +45,12 @@ public :
     void stop() { _stop_requested = true; }
 
     void run_program(vector<uint8_t> &&program, uint16_t addr);
-    void run_rom(const char *rom_path, nes_rom_exec_mode mode);
+    void load_rom(const char *rom_data, std::size_t rom_size, nes_rom_exec_mode mode);
+    void run_rom(const char *rom_data, std::size_t rom_size, nes_rom_exec_mode mode);
 
-    void load_rom(const char *rom_path, nes_rom_exec_mode mode);
-   
     nes_cpu     *cpu()      { return _cpu.get();   }
     nes_memory  *ram()      { return _ram.get();   }
-    nes_ppu     *ppu()      { return _ppu.get();   } 
+    nes_ppu     *ppu()      { return _ppu.get();   }
     nes_input   *input()    { return _input.get(); }
 
 public :
@@ -70,7 +69,7 @@ public :
     bool stop_requested() { return _stop_requested; }
 
 private :
-    // Emulation loop that is only intended for tests 
+    // Emulation loop that is only intended for tests
     void test_loop();
 
     void init();

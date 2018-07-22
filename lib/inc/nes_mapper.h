@@ -3,13 +3,13 @@
 #include <cstdint>
 #include <nes_trace.h>
 #include <memory>
-#include <fstream>
+#include <algorithm>
 
 #include <common.h>
 
 using namespace std;
 
-enum nes_mapper_flags : uint16_t 
+enum nes_mapper_flags : uint16_t
 {
     nes_mapper_flags_none = 0,
 
@@ -98,7 +98,7 @@ private :
 };
 
 //
-// iNES Mapper 1 
+// iNES Mapper 1
 // http://wiki.nesdev.com/w/index.php/MMC1
 //
 class nes_mapper_mmc1 : public nes_mapper
@@ -137,7 +137,7 @@ private :
 };
 
 //
-// iNES Mapper 4 
+// iNES Mapper 4
 // http://wiki.nesdev.com/w/index.php/MMC3
 //
 class nes_mapper_mmc3 : public nes_mapper
@@ -206,20 +206,16 @@ public :
     // Loads a NES ROM file
     // Automatically detects format according to extension and header
     // Returns a nes_mapper instance which has all necessary memory mapped
-    static shared_ptr<nes_mapper> load_from(const char *path)
-
+    static shared_ptr<nes_mapper> load_from(const char *rom_data, std::size_t rom_size)
     {
-        NES_TRACE1("[NES_ROM] Opening NES ROM file '" << path << "' ...");
-
         assert(sizeof(ines_header) == 0x10);
 
-        ifstream file;
-        file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-        file.open(path, std::ifstream::in | std::ifstream::binary);
-        
+        const char *data = rom_data;
+
         // Parse header
         ines_header header;
-        file.read((char *)&header, sizeof(header));
+        std::copy_n(data, sizeof(header), (char *)&header);
+        data += sizeof(header);
 
         if (header.flag6 & FLAG_6_HAS_TRAINER_MASK)
         {
@@ -227,7 +223,7 @@ public :
             NES_TRACE1("[NES_ROM] Skipping trainer bytes...");
 
             // skip the 512-byte trainer
-            file.seekg(0x200, ios_base::cur);
+            data += 0x200;
         }
 
         NES_TRACE1("[NES_ROM] HEADER: Flags6 = 0x" << std::hex << (uint32_t) header.flag6);
@@ -251,8 +247,8 @@ public :
         NES_TRACE1("[NES_ROM] HEADER: Flags7 = 0x" << std::hex << (uint32_t) header.flag7);
         int mapper_id = ((header.flag6 & FLAG_6_LO_MAPPER_NUMBER_MASK) >> 4) + ((header.flag7 & FLAG_7_HI_MAPPER_NUMBER_MASK));
         NES_TRACE1("[NES_ROM] HEADER: Mapper_ID = " << std::dec << mapper_id);
-        
-        int prg_rom_size = header.prg_size * 0x4000;    // 16KB 
+
+        int prg_rom_size = header.prg_size * 0x4000;    // 16KB
         int chr_rom_size = header.chr_size * 0x2000;    // 8KB
 
         NES_TRACE1("[NES_ROM] HEADER: PRG ROM Size = 0x" << std::hex << (uint32_t) prg_rom_size);
@@ -261,9 +257,11 @@ public :
         auto prg_rom = make_shared<vector<uint8_t>>(prg_rom_size);
         auto chr_rom = make_shared<vector<uint8_t>>(chr_rom_size);
 
-        file.read((char *)prg_rom->data(), prg_rom->size());
-        file.read((char *)chr_rom->data(), chr_rom->size());
-        
+        std::copy_n(data, prg_rom->size(), (char *)prg_rom->data());
+        data += prg_rom->size();
+        std::copy_n(data, chr_rom->size(), (char *)chr_rom->data());
+        data += chr_rom->size();
+
         shared_ptr<nes_mapper> mapper;
 
         // @TODO - Change this into a mapper factory class
@@ -273,10 +271,8 @@ public :
         case 1: mapper = make_shared<nes_mapper_mmc1>(prg_rom, chr_rom, vertical_mirroring); break;
         case 4: mapper = make_shared<nes_mapper_mmc3>(prg_rom, chr_rom, vertical_mirroring); break;
         default:
-            assert(!"Unsupported mapper id");           
+            assert(!"Unsupported mapper id");
         }
-
-        file.close();
 
         return mapper;
     }
