@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "neschan.h"
 #include <iostream>
+#include <fstream>
 
 using namespace std;
 

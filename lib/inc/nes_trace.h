@@ -1,5 +1,7 @@
 #pragma once
 
+#ifndef DISABLE_LOGGING
+
 #include <cstring>
 #include <memory>
 #include <fstream>
@@ -120,4 +122,23 @@ static ostream& operator <<(ostream &os, const string &str)
 #define NES_DBG(expr) NES_LOG_IF(nes_tracer_level_debug, expr);
 #else
 #define NES_DBG(expr) ;
+#endif
+
+#else
+
+#define INIT_TRACE(filename)
+#define INIT_TRACE_LEVEL(filename, level)
+
+#define INIT_TRACE_DIAG(filename)
+#define INIT_TRACE_DEBUG(filename)
+
+#define NES_LOG(expr)
+#define NES_LOG_IF(level, expr)
+
+#define NES_TRACE0(expr)
+#define NES_TRACE1(expr)
+#define NES_TRACE2(expr)
+#define NES_TRACE3(expr)
+#define NES_TRACE4(expr)
+
 #endif
