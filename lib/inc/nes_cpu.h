@@ -1,5 +1,5 @@
 //=================================================================================================
-// NESChan 
+// NESChan
 // Author: Yi Zhang (yizhang82@outlook.com)
 //=================================================================================================
 
@@ -8,7 +8,6 @@
 #include "nes_memory.h"
 #include "nes_mapper.h"
 #include "nes_component.h"
-#include <vector>
 
 using namespace std;
 
@@ -60,8 +59,8 @@ enum nes_addr_mode
     nes_addr_mode_imm,        //          val = arg_8
     nes_addr_mode_ind_jmp,    //          val = peek16(arg_16), with JMP bug
     nes_addr_mode_rel,        //          val = arg_8, as offset
-    nes_addr_mode_abs,        //          val = PEEK(arg_16), LSB then MSB                   
-    nes_addr_mode_abs_jmp,    //          val = arg_16, LSB then MSB, direct jump address                  
+    nes_addr_mode_abs,        //          val = PEEK(arg_16), LSB then MSB
+    nes_addr_mode_abs_jmp,    //          val = arg_16, LSB then MSB, direct jump address
     nes_addr_mode_zp,         //          val = PEEK(arg_8)
     nes_addr_mode_zp_ind_x,   // d, x     val = PEEK((arg_8 + X) % $FF ), 4 cycles
     nes_addr_mode_zp_ind_y,   // d, y     val = PEEK((arg_8 + Y) % $FF), 4 cycles
@@ -78,7 +77,7 @@ struct nes_cpu_context
     unsigned char A;        // Accumulator - supports using status register for carrying, overflow detection, etc
     unsigned char X;        // Index register. Used for addressing modes, loop counters
     unsigned char Y;        // Same as X
-    unsigned short PC;      // Program counter. Supports 65535 direct (unbanked) memory locations. 
+    unsigned short PC;      // Program counter. Supports 65535 direct (unbanked) memory locations.
     unsigned char S;        // Stack pointer. Can be accessed using interrupts, pulls, pushes, and transfers.
     unsigned char P;        // Status register - used by ALU unit
 };
@@ -98,7 +97,7 @@ enum nes_op_code
 class nes_cpu : public nes_component
 {
 public :
-    nes_cpu() 
+    nes_cpu()
     {
         _system = nullptr;
         _mem = nullptr;
@@ -141,7 +140,7 @@ public :
     uint8_t peek(uint16_t addr) { return _mem->get_byte(addr); }
     uint16_t peek_word(uint16_t addr) { return _mem->get_word(addr); }
     void poke(uint16_t addr, uint8_t value);
-    
+
     uint8_t &A() { return _context.A; }
     uint8_t &X() { return _context.X; }
     uint8_t &Y() { return _context.Y; }
@@ -176,12 +175,12 @@ public :
     int8_t pop_byte()
     {
         // stack grow top->down
-        // no underflow/overflow detection        
+        // no underflow/overflow detection
         _context.S++;
         return _mem->get_byte(_context.S + STACK_OFFSET);
     }
 
-    int16_t pop_word()    
+    int16_t pop_word()
     {
         // low-order bytes pop first since the stack grow top->down and the machine is little-endian
         uint8_t lo = pop_byte();
@@ -241,7 +240,7 @@ private :
     // Implements all address mode
     //
     operand_t decode_operand(nes_addr_mode addr_mode)
-    {    
+    {
         if (addr_mode == nes_addr_mode::nes_addr_mode_acc)
         {
             return { 0, operand_kind_acc, false };
@@ -307,7 +306,7 @@ private :
         }
         else if (addr_mode == nes_addr_mode::nes_addr_mode_zp_ind_y)
         {
-            // zero page indexed Y 
+            // zero page indexed Y
             return (decode_byte() + _context.Y) & 0xff;
         }
         else if (addr_mode == nes_addr_mode::nes_addr_mode_ind_jmp)
@@ -405,11 +404,11 @@ private :
 
     // ASL - Arithmetic Shift Left
     void ASL(nes_addr_mode addr_mode);
-    
+
     // BCC - Branch if Carry Clear
     void BCC(nes_addr_mode addr_mode);
 
-    // BCS - Branch if Carry Set 
+    // BCS - Branch if Carry Set
     void BCS(nes_addr_mode addr_mode);
 
     // BEQ - Branch if Equal
@@ -424,7 +423,7 @@ private :
     // BNE - Branch if not equal
     void BNE(nes_addr_mode addr_mode);
 
-    // BPL - Branch if positive 
+    // BPL - Branch if positive
     void BPL(nes_addr_mode addr_mode);
 
     // BRK - Force interrupt
@@ -448,7 +447,7 @@ private :
     // CLV - Clear overflow flag
     void CLV(nes_addr_mode addr_mode);
 
-    // CMP - Compare 
+    // CMP - Compare
     void CMP(nes_addr_mode addr_mode);
 
     // CPX - Compare X register
@@ -466,7 +465,7 @@ private :
     // DEY - Decrement Y register
     void DEY(nes_addr_mode addr_mode);
 
-    // Exclusive OR 
+    // Exclusive OR
     void EOR(nes_addr_mode addr_mode);
 
     // INC - Increment memory
@@ -478,7 +477,7 @@ private :
     // INY - Increment Y
     void INY(nes_addr_mode addr_mode);
 
-    // JMP - Jump 
+    // JMP - Jump
     void JMP(nes_addr_mode addr_mode);
 
     // JSR - Jump to subroutine
@@ -540,7 +539,7 @@ private :
     // SEI - Set interrupt disable
     void SEI(nes_addr_mode addr_mode);
 
-    // STA - Store Accumulator  
+    // STA - Store Accumulator
     void STA(nes_addr_mode addr_mode);
 
     // STX - Store X
@@ -549,13 +548,13 @@ private :
     // STY- Store Y
     void STY(nes_addr_mode addr_mode);
 
-    // TAX - Transfer accumulator to X 
+    // TAX - Transfer accumulator to X
     void TAX(nes_addr_mode addr_mode);
 
     // TAY - Transfer accumulator to Y
     void TAY(nes_addr_mode addr_mode);
 
-    // TSX - Transfer stack pointer to X 
+    // TSX - Transfer stack pointer to X
     void TSX(nes_addr_mode addr_mode);
 
     // TXA - Transfer X to acc
@@ -586,7 +585,7 @@ private :
     void RRA(nes_addr_mode addr_mode);
     void SLO(nes_addr_mode addr_mode);
     void SRE(nes_addr_mode addr_mode);
-    
+
     void XAA(nes_addr_mode addr_mode);
     void AHX(nes_addr_mode addr_mode);
     void TAS(nes_addr_mode addr_mode);
