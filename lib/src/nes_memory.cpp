@@ -45,7 +45,7 @@ void nes_memory::write_io_reg(uint16_t addr, uint8_t val)
     _ppu->write_latch(val);
 }
 
-void nes_memory::load_mapper(shared_ptr<nes_mapper> &mapper)
+void nes_memory::load_mapper(nes_mapper *mapper)
 {
     // unset previous mapper
     _mapper = nullptr;

@@ -85,7 +85,7 @@ public :
         }
     }
 
-    void load_mapper(shared_ptr<nes_mapper> &mapper);
+    void load_mapper(nes_mapper *mapper);
 
     nes_mapper& get_mapper() { return *_mapper; }
 
@@ -106,7 +106,7 @@ public :
 
 private :
     array<uint8_t, RAM_SIZE> _ram;
-    shared_ptr<nes_mapper> _mapper;
+    nes_mapper *_mapper;
 
     nes_system *_system;
     nes_ppu *_ppu;

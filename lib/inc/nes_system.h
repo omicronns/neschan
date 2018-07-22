@@ -5,6 +5,7 @@
 #include "nes_cpu.h"
 #include "nes_ppu.h"
 #include "nes_memory.h"
+#include "nes_mapper.h"
 #include "nes_input.h"
 
 using namespace std;
@@ -65,6 +66,8 @@ private :
 
     void init();
 
+    void load_mapper(uint8_t *rom_data, std::size_t rom_size);
+
 private :
     nes_cycle_t _master_cycle;              // keep count of current cycle
 
@@ -72,6 +75,17 @@ private :
     nes_memory _ram;
     nes_ppu _ppu;
     nes_input _input;
+
+    nes_mapper *_mapper;
+
+    union nes_mappers {
+        nes_mappers() {}
+        ~nes_mappers() {}
+
+        nes_mapper_nrom _nrom;
+        nes_mapper_mmc1 _mmc1;
+        nes_mapper_mmc3 _mmc3;
+    } _mappers;
 
     bool _stop_requested;                   // useful for internal testing, or synchronization to rendering
 };

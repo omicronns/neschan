@@ -3,6 +3,8 @@
 #include "nes_ppu.h"
 #include "nes_input.h"
 
+#include <algorithm>
+
 using namespace std;
 
 void nes_system::init()
@@ -41,20 +43,101 @@ void nes_system::run_program(uint8_t *program_data, std::size_t program_size, ui
 
 void nes_system::load_rom(uint8_t *rom_data, std::size_t rom_size, nes_rom_exec_mode mode)
 {
-    auto mapper = nes_rom_loader::load_from(rom_data, rom_size);
-    _ram.load_mapper(mapper);
-    _ppu.load_mapper(mapper);
+    load_mapper(rom_data, rom_size);
+    _ram.load_mapper(_mapper);
+    _ppu.load_mapper(_mapper);
 
     if (mode == nes_rom_exec_mode_direct)
     {
         nes_mapper_info info;
-        mapper->get_info(info);
+        _mapper->get_info(info);
         _cpu.PC() = info.code_addr;
     }
     else
     {
         assert(mode == nes_rom_exec_mode_reset);
         _cpu.PC() = ram()->get_word(RESET_HANDLER);
+    }
+}
+
+#define FLAG_6_USE_VERTICAL_MIRRORING_MASK 0x1
+#define FLAG_6_HAS_BATTERY_BACKED_PRG_RAM_MASK 0x2
+#define FLAG_6_HAS_TRAINER_MASK  0x4
+#define FLAG_6_USE_FOUR_SCREEN_VRAM_MASK 0x8
+#define FLAG_6_LO_MAPPER_NUMBER_MASK 0xf0
+#define FLAG_7_HI_MAPPER_NUMBER_MASK 0xf0
+
+void nes_system::load_mapper(uint8_t *rom_data, std::size_t rom_size)
+{
+    struct ines_header
+    {
+        uint8_t magic[4];       // 0x4E, 0x45, 0x53, 0x1A
+        uint8_t prg_size;       // PRG ROM in 16K
+        uint8_t chr_size;       // CHR ROM in 8K, 0 -> using CHR RAM
+        uint8_t flag6;
+        uint8_t flag7;
+        uint8_t prg_ram_size;   // PRG RAM in 8K
+        uint8_t flag9;
+        uint8_t flag10;         // unofficial
+        uint8_t reserved[5];    // reserved
+    };
+
+    assert(sizeof(ines_header) == 0x10);
+
+    uint8_t *data = rom_data;
+
+    // Parse header
+    ines_header header;
+    std::copy_n(data, sizeof(header), (char *)&header);
+    data += sizeof(header);
+
+    if (header.flag6 & FLAG_6_HAS_TRAINER_MASK)
+    {
+        // skip the 512-byte trainer
+        data += 0x200;
+    }
+
+    NES_TRACE1("[NES_ROM] HEADER: Flags6 = 0x" << std::hex << (uint32_t) header.flag6);
+    bool vertical_mirroring = header.flag6 & FLAG_6_USE_VERTICAL_MIRRORING_MASK;
+    if (vertical_mirroring)
+    {
+        NES_TRACE1("    Mirroring: Vertical");
+    }
+    else
+    {
+        NES_TRACE1("    Mirroring: Horizontal");
+    }
+
+    if (header.flag7 == 0x44)
+    {
+        // This might be one of the earlier dumps with bad iNes header (D stands for diskdude)
+        NES_TRACE1("[NES_ROM] Bad flag7 0x44 detected. Resetting to 0...");
+        header.flag7 = 0;
+    }
+
+    NES_TRACE1("[NES_ROM] HEADER: Flags7 = 0x" << std::hex << (uint32_t) header.flag7);
+    int mapper_id = ((header.flag6 & FLAG_6_LO_MAPPER_NUMBER_MASK) >> 4) + ((header.flag7 & FLAG_7_HI_MAPPER_NUMBER_MASK));
+    NES_TRACE1("[NES_ROM] HEADER: Mapper_ID = " << std::dec << mapper_id);
+
+    int prg_rom_size = header.prg_size * 0x4000;    // 16KB
+    int chr_rom_size = header.chr_size * 0x2000;    // 8KB
+
+    NES_TRACE1("[NES_ROM] HEADER: PRG ROM Size = 0x" << std::hex << (uint32_t) prg_rom_size);
+    NES_TRACE1("[NES_ROM] HEADER: CHR_ROM Size = 0x" << std::hex << (uint32_t) chr_rom_size);
+
+    auto prg_rom = data;
+    data += prg_rom_size;
+    auto chr_rom = data;
+    data += chr_rom_size;
+
+    // @TODO - Change this into a mapper factory class
+    switch (mapper_id)
+    {
+    case 0: _mapper = new(&_mappers._nrom) nes_mapper_nrom(prg_rom, prg_rom_size, chr_rom, chr_rom_size, vertical_mirroring); break;
+    case 1: _mapper = new(&_mappers._mmc1) nes_mapper_mmc1(prg_rom, prg_rom_size, chr_rom, chr_rom_size, vertical_mirroring); break;
+    case 4: _mapper = new(&_mappers._mmc3) nes_mapper_mmc3(prg_rom, prg_rom_size, chr_rom, chr_rom_size, vertical_mirroring); break;
+    default:
+        assert(!"Unsupported mapper id");
     }
 }
 

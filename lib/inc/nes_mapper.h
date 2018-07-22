@@ -193,33 +193,3 @@ private:
     uint8_t _bank_select;                       // control register
     uint8_t _prev_prg_mode;                     // previous prg mode
 };
-
-#define FLAG_6_USE_VERTICAL_MIRRORING_MASK 0x1
-#define FLAG_6_HAS_BATTERY_BACKED_PRG_RAM_MASK 0x2
-#define FLAG_6_HAS_TRAINER_MASK  0x4
-#define FLAG_6_USE_FOUR_SCREEN_VRAM_MASK 0x8
-#define FLAG_6_LO_MAPPER_NUMBER_MASK 0xf0
-#define FLAG_7_HI_MAPPER_NUMBER_MASK 0xf0
-
-class nes_rom_loader
-{
-public :
-    struct ines_header
-    {
-        uint8_t magic[4];       // 0x4E, 0x45, 0x53, 0x1A
-        uint8_t prg_size;       // PRG ROM in 16K
-        uint8_t chr_size;       // CHR ROM in 8K, 0 -> using CHR RAM
-        uint8_t flag6;
-        uint8_t flag7;
-        uint8_t prg_ram_size;   // PRG RAM in 8K
-        uint8_t flag9;
-        uint8_t flag10;         // unofficial
-        uint8_t reserved[5];    // reserved
-    };
-
-    // Loads a NES ROM file
-    // Automatically detects format according to extension and header
-    // Returns a nes_mapper instance which has all necessary memory mapped
-    static shared_ptr<nes_mapper> load_from(uint8_t *rom_data, std::size_t rom_size);
-};
-

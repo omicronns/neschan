@@ -36,7 +36,7 @@ void nes_ppu::oam_dma(uint16_t addr)
     }
 }
 
-void nes_ppu::load_mapper(shared_ptr<nes_mapper> &mapper)
+void nes_ppu::load_mapper(nes_mapper *mapper)
 {
     // unset previous mapper
     _mapper = nullptr;

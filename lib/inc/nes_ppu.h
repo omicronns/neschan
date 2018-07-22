@@ -152,7 +152,7 @@ public :
 
     bool is_render_off() { return !_show_bg && !_show_sprites; }
 
-    void load_mapper(shared_ptr<nes_mapper> &mapper);
+    void load_mapper(nes_mapper *mapper);
 
     void set_mirroring(nes_mapper_flags flags);
 
@@ -560,7 +560,7 @@ private :
     bool _mask_oam_read;                // OAM read is masked at certain sprite evaluation stage to always return FF
     uint8_t _sprite_pos_y;              // last sprite Y read
 
-    shared_ptr<nes_mapper> _mapper;
+    nes_mapper *_mapper;
 
     nes_mapper_flags _mirroring_flags;  // mapper flags masked by mirroring flags
 };
