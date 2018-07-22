@@ -9,6 +9,10 @@
 
 using namespace std;
 
+void run_program(nes_system *system, std::vector<uint8_t> &&program, uint16_t addr) {
+    system->run_program(program.data(), program.size(), addr);
+}
+
 TEST_CASE("CPU tests") {
     nes_system system;
 
@@ -20,7 +24,7 @@ TEST_CASE("CPU tests") {
         system.power_on();
 
         // @TODO - We need an assembler to make testing easier
-        system.run_program(
+        run_program(&system,
             {
                 0xa9, 0x10,     // LDA #$10     -> A = #$10
                 0x85, 0x20,     // STA $20      -> $20 = #$10
@@ -48,7 +52,7 @@ TEST_CASE("CPU tests") {
 
         system.power_on();
 
-        system.run_program(
+        run_program(&system,
             {
                 0xa9, 0xff,     // LDA #$ff
                 0x85, 0x30,     // STA $30      -> $30 = #$ff

@@ -2,7 +2,6 @@
 
 #include <cstdint>
 #include <memory>
-#include <vector>
 
 #include "nes_component.h"
 
@@ -44,7 +43,7 @@ public :
     // Stop the emulation engine and exit the main loop
     void stop() { _stop_requested = true; }
 
-    void run_program(vector<uint8_t> &&program, uint16_t addr);
+    void run_program(uint8_t *program_data, std::size_t program_size, uint16_t addr);
     void load_rom(const char *rom_data, std::size_t rom_size, nes_rom_exec_mode mode);
     void run_rom(const char *rom_data, std::size_t rom_size, nes_rom_exec_mode mode);
 
@@ -81,8 +80,6 @@ private :
     unique_ptr<nes_memory> _ram;
     unique_ptr<nes_ppu> _ppu;
     unique_ptr<nes_input> _input;
-
-    vector<nes_component *> _components;
 
     bool _stop_requested;                   // useful for internal testing, or synchronization to rendering
 };

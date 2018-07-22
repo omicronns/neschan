@@ -12,11 +12,6 @@ nes_system::nes_system()
     _cpu = make_unique<nes_cpu>();
     _ppu = make_unique<nes_ppu>();
     _input = make_unique<nes_input>();
-
-    _components.push_back(_ram.get());
-    _components.push_back(_cpu.get());
-    _components.push_back(_ppu.get());
-    _components.push_back(_input.get());
 }
 
 nes_system::~nes_system() {}
@@ -31,21 +26,25 @@ void nes_system::power_on()
 {
     init();
 
-    for (auto comp : _components)
-        comp->power_on(this);
+    _ram->power_on(this);
+    _cpu->power_on(this);
+    _ppu->power_on(this);
+    _input->power_on(this);
 }
 
 void nes_system::reset()
 {
     init();
 
-    for (auto comp : _components)
-        comp->reset();
+    _ram->reset();
+    _cpu->reset();
+    _ppu->reset();
+    _input->reset();
 }
 
-void nes_system::run_program(vector<uint8_t> &&program, uint16_t addr)
+void nes_system::run_program(uint8_t *program_data, std::size_t program_size, uint16_t addr)
 {
-    _ram->set_bytes(addr, program.data(), program.size());
+    _ram->set_bytes(addr, program_data, program_size);
     _cpu->PC() = addr;
 
     test_loop();

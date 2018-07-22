@@ -4,6 +4,7 @@
 #include <nes_trace.h>
 #include <memory>
 #include <algorithm>
+#include <vector>
 
 #include <common.h>
 
