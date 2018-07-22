@@ -14,12 +14,6 @@ nes_ppu_protect::~nes_ppu_protect()
     _ppu->set_protect(false);
 }
 
-nes_ppu::~nes_ppu()
-{
-    _oam = nullptr;
-    _vram = nullptr;
-}
-
 void nes_ppu::write_OAMDMA(uint8_t val)
 {
     // @TODO - CPU is suspended and take 513/514 cycle
@@ -31,14 +25,14 @@ void nes_ppu::oam_dma(uint16_t addr)
     if (_oam_addr == 0)
     {
         // simple case - copy the 0x100 bytes directly
-        _system->ram()->get_bytes(_oam.get(), PPU_OAM_SIZE, addr, PPU_OAM_SIZE);
+        _system->ram()->get_bytes(_oam.data(), PPU_OAM_SIZE, addr, PPU_OAM_SIZE);
     }
     else
     {
         // the copy starts at _oam_addr and wraps around
         int copy_before_wrap = 0x100 - _oam_addr;
-        _system->ram()->get_bytes(_oam.get() + _oam_addr, copy_before_wrap, addr, copy_before_wrap);
-        _system->ram()->get_bytes(_oam.get(), PPU_OAM_SIZE - copy_before_wrap, addr + copy_before_wrap, PPU_OAM_SIZE - copy_before_wrap);
+        _system->ram()->get_bytes(_oam.data() + _oam_addr, copy_before_wrap, addr, copy_before_wrap);
+        _system->ram()->get_bytes(_oam.data(), PPU_OAM_SIZE - copy_before_wrap, addr + copy_before_wrap, PPU_OAM_SIZE - copy_before_wrap);
     }
 }
 

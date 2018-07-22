@@ -124,15 +124,6 @@ private :
 class nes_ppu : public nes_component
 {
 public :
-    nes_ppu()
-    {
-        _vram = make_unique<uint8_t[]>(PPU_VRAM_SIZE);
-        _oam = make_unique<uint8_t[]>(PPU_OAM_SIZE);
-    }
-
-    ~nes_ppu();
-
-public :
     //
     // nes_component overrides
     //
@@ -213,7 +204,7 @@ public :
             return;
 
         redirect_addr(addr);
-        memcpy_s(_vram.get() + addr, PPU_VRAM_SIZE - addr, src, src_size);
+        memcpy_s(_vram.data() + addr, PPU_VRAM_SIZE - addr, src, src_size);
     }
 
     void redirect_addr(uint16_t &addr)
@@ -461,7 +452,7 @@ private :
         assert(sprite_id < PPU_SPRITE_MAX);
 
         // sprite info resides in OAM memory and there are 64 sprites x 4 bytes each = 256 bytes
-        return &((sprite_info *)_oam.get())[sprite_id];
+        return &((sprite_info *)_oam.data())[sprite_id];
     }
 
     uint8_t get_palette_color(bool is_background, uint8_t palette_index_4_bit)
@@ -498,8 +489,8 @@ private :
  private :
     nes_system *_system;
 
-    unique_ptr<uint8_t[]> _vram;
-    unique_ptr<uint8_t[]> _oam;
+    array<uint8_t, PPU_VRAM_SIZE> _vram;
+    array<uint8_t, PPU_OAM_SIZE> _oam;
 
     // PPUCTRL data
     uint16_t _name_tbl_addr;
