@@ -29,5 +29,5 @@
 #include <nes_input.h>
 #include <nes_trace.h>
 
-#include "SDL.h"
+#include <SDL.h>
 #include <SDL_joystick.h>
