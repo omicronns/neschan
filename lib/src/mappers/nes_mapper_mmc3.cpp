@@ -7,7 +7,7 @@
 void nes_mapper_mmc3::on_load_ram(nes_memory &mem)
 {
     // $E000~$FFFF is always the last bank
-    mem.set_bytes(0xe000, _prg_rom->data() + _prg_rom->size() - 0x2000, 0x2000);
+    mem.set_bytes(0xe000, _prg_rom + _prg_rom_size - 0x2000, 0x2000);
 
     _mem = &mem;
 }
@@ -121,11 +121,11 @@ void nes_mapper_mmc3::write_bank_data(uint8_t val)
         // the second last 8KB bank
         if (_bank_select & 0x40)
         {
-            _mem->set_bytes(0x8000, _prg_rom->data() + _prg_rom->size() - 0x4000, 0x2000);
+            _mem->set_bytes(0x8000, _prg_rom + _prg_rom_size - 0x4000, 0x2000);
         }
         else
         {
-            _mem->set_bytes(0xc000, _prg_rom->data() + _prg_rom->size() - 0x4000, 0x2000);
+            _mem->set_bytes(0xc000, _prg_rom + _prg_rom_size - 0x4000, 0x2000);
         }
     }
 
@@ -152,10 +152,10 @@ void nes_mapper_mmc3::write_bank_data(uint8_t val)
             addr = 0xa000;
         }
 
-        if (_prg_rom->size() < offset + size)
+        if (_prg_rom_size < offset + size)
             return;
 
-        _mem->set_bytes(addr, _prg_rom->data() + offset, size);
+        _mem->set_bytes(addr, _prg_rom + offset, size);
     }
     else
     {
@@ -214,10 +214,10 @@ void nes_mapper_mmc3::write_bank_data(uint8_t val)
         if (inversion)
             ppu_addr ^= 0x1000;
 
-        if (_chr_rom->size() < offset + ppu_size)
+        if (_chr_rom_size < offset + ppu_size)
             return;
 
-        _ppu->write_bytes(ppu_addr, _chr_rom->data() + offset, ppu_size);
+        _ppu->write_bytes(ppu_addr, _chr_rom + offset, ppu_size);
     }
 }
 

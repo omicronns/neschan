@@ -4,7 +4,6 @@
 #include <nes_trace.h>
 #include <memory>
 #include <algorithm>
-#include <vector>
 
 #include <common.h>
 
@@ -82,19 +81,23 @@ public :
 class nes_mapper_nrom : public nes_mapper
 {
 public :
-    nes_mapper_nrom(shared_ptr<vector<uint8_t>> &prg_rom, shared_ptr<vector<uint8_t>> &chr_rom, bool vertical_mirroring)
-        :_prg_rom(prg_rom), _chr_rom(chr_rom), _vertical_mirroring(vertical_mirroring)
-    {
-
-    }
+    nes_mapper_nrom(
+        uint8_t *prg_rom, std::size_t prg_rom_size,
+        uint8_t *chr_rom, std::size_t chr_rom_size,
+        bool vertical_mirroring)
+        : _prg_rom(prg_rom), _prg_rom_size(prg_rom_size),
+          _chr_rom(chr_rom), _chr_rom_size(chr_rom_size), _vertical_mirroring(vertical_mirroring)
+    {}
 
     virtual void on_load_ram(nes_memory &mem);
     virtual void on_load_ppu(nes_ppu &ppu);
     virtual void get_info(nes_mapper_info &info);
 
 private :
-    shared_ptr<vector<uint8_t>> _prg_rom;
-    shared_ptr<vector<uint8_t>> _chr_rom;
+    uint8_t *_prg_rom;
+    std::size_t _prg_rom_size;
+    uint8_t *_chr_rom;
+    std::size_t _chr_rom_size;
     bool _vertical_mirroring;
 };
 
@@ -105,8 +108,12 @@ private :
 class nes_mapper_mmc1 : public nes_mapper
 {
 public :
-    nes_mapper_mmc1(shared_ptr<vector<uint8_t>> &prg_rom, shared_ptr<vector<uint8_t>> &chr_rom, bool vertical_mirroring)
-        :_prg_rom(prg_rom), _chr_rom(chr_rom), _vertical_mirroring(vertical_mirroring)
+    nes_mapper_mmc1(
+        uint8_t *prg_rom, std::size_t prg_rom_size,
+        uint8_t *chr_rom, std::size_t chr_rom_size,
+        bool vertical_mirroring)
+        : _prg_rom(prg_rom), _prg_rom_size(prg_rom_size),
+          _chr_rom(chr_rom), _chr_rom_size(chr_rom_size), _vertical_mirroring(vertical_mirroring)
     {
         _bit_latch = 0;
     }
@@ -127,8 +134,10 @@ private :
     nes_ppu *_ppu;
     nes_memory *_mem;
 
-    shared_ptr<vector<uint8_t>> _prg_rom;
-    shared_ptr<vector<uint8_t>> _chr_rom;
+    uint8_t *_prg_rom;
+    std::size_t _prg_rom_size;
+    uint8_t *_chr_rom;
+    std::size_t _chr_rom_size;
     bool _vertical_mirroring;
 
 
@@ -144,8 +153,12 @@ private :
 class nes_mapper_mmc3 : public nes_mapper
 {
 public:
-    nes_mapper_mmc3(shared_ptr<vector<uint8_t>> &prg_rom, shared_ptr<vector<uint8_t>> &chr_rom, bool vertical_mirroring)
-        :_prg_rom(prg_rom), _chr_rom(chr_rom), _vertical_mirroring(vertical_mirroring)
+    nes_mapper_mmc3(
+        uint8_t *prg_rom, std::size_t prg_rom_size,
+        uint8_t *chr_rom, std::size_t chr_rom_size,
+        bool vertical_mirroring)
+        : _prg_rom(prg_rom), _prg_rom_size(prg_rom_size),
+          _chr_rom(chr_rom), _chr_rom_size(chr_rom_size), _vertical_mirroring(vertical_mirroring)
     {
         // 1 -> neither 0 or 0x40 - means not yet initialized (and always will be different)
         _prev_prg_mode = 1;
@@ -173,8 +186,10 @@ private:
     nes_ppu * _ppu;
     nes_memory *_mem;
 
-    shared_ptr<vector<uint8_t>> _prg_rom;
-    shared_ptr<vector<uint8_t>> _chr_rom;
+    uint8_t *_prg_rom;
+    std::size_t _prg_rom_size;
+    uint8_t *_chr_rom;
+    std::size_t _chr_rom_size;
     bool _vertical_mirroring;
 
     uint8_t _bank_select;                       // control register
@@ -207,11 +222,11 @@ public :
     // Loads a NES ROM file
     // Automatically detects format according to extension and header
     // Returns a nes_mapper instance which has all necessary memory mapped
-    static shared_ptr<nes_mapper> load_from(const char *rom_data, std::size_t rom_size)
+    static shared_ptr<nes_mapper> load_from(uint8_t *rom_data, std::size_t rom_size)
     {
         assert(sizeof(ines_header) == 0x10);
 
-        const char *data = rom_data;
+        uint8_t *data = rom_data;
 
         // Parse header
         ines_header header;
@@ -255,22 +270,19 @@ public :
         NES_TRACE1("[NES_ROM] HEADER: PRG ROM Size = 0x" << std::hex << (uint32_t) prg_rom_size);
         NES_TRACE1("[NES_ROM] HEADER: CHR_ROM Size = 0x" << std::hex << (uint32_t) chr_rom_size);
 
-        auto prg_rom = make_shared<vector<uint8_t>>(prg_rom_size);
-        auto chr_rom = make_shared<vector<uint8_t>>(chr_rom_size);
-
-        std::copy_n(data, prg_rom->size(), (char *)prg_rom->data());
-        data += prg_rom->size();
-        std::copy_n(data, chr_rom->size(), (char *)chr_rom->data());
-        data += chr_rom->size();
+        auto prg_rom = data;
+        data += prg_rom_size;
+        auto chr_rom = data;
+        data += chr_rom_size;
 
         shared_ptr<nes_mapper> mapper;
 
         // @TODO - Change this into a mapper factory class
         switch (mapper_id)
         {
-        case 0: mapper = make_shared<nes_mapper_nrom>(prg_rom, chr_rom, vertical_mirroring); break;
-        case 1: mapper = make_shared<nes_mapper_mmc1>(prg_rom, chr_rom, vertical_mirroring); break;
-        case 4: mapper = make_shared<nes_mapper_mmc3>(prg_rom, chr_rom, vertical_mirroring); break;
+        case 0: mapper = make_shared<nes_mapper_nrom>(prg_rom, prg_rom_size, chr_rom, chr_rom_size, vertical_mirroring); break;
+        case 1: mapper = make_shared<nes_mapper_mmc1>(prg_rom, prg_rom_size, chr_rom, chr_rom_size, vertical_mirroring); break;
+        case 4: mapper = make_shared<nes_mapper_mmc3>(prg_rom, prg_rom_size, chr_rom, chr_rom_size, vertical_mirroring); break;
         default:
             assert(!"Unsupported mapper id");
         }

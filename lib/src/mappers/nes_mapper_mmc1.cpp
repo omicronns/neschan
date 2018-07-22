@@ -6,7 +6,7 @@
 //
 void nes_mapper_mmc1::on_load_ram(nes_memory &mem)
 {
-    mem.set_bytes(0x8000, _prg_rom->data() + _prg_rom->size() - 0x8000, 0x8000);
+    mem.set_bytes(0x8000, _prg_rom + _prg_rom_size - 0x8000, 0x8000);
 
     _mem = &mem;
 }
@@ -27,7 +27,7 @@ void nes_mapper_mmc1::get_info(nes_mapper_info &info)
 {
     memset(&info, 0, sizeof(info));
 
-    if (_prg_rom->size() == 0x4000)
+    if (_prg_rom_size == 0x4000)
         info.code_addr = 0xc000;
     else
         info.code_addr = 0x8000;
@@ -40,7 +40,7 @@ void nes_mapper_mmc1::get_info(nes_mapper_info &info)
         info.flags = nes_mapper_flags(info.flags | nes_mapper_flags_vertical_mirroring);
 }
 
-void nes_mapper_mmc1::write_reg(uint16_t addr, uint8_t val) 
+void nes_mapper_mmc1::write_reg(uint16_t addr, uint8_t val)
 {
     if (val & 0x80)
     {
@@ -117,10 +117,10 @@ void nes_mapper_mmc1::write_chr_bank_0(uint8_t val)
         size = 0x2000;
     }
 
-    if (_chr_rom->size() < addr + size)
+    if (_chr_rom_size < addr + size)
         return;
 
-    _ppu->write_bytes(0x0000, _chr_rom->data() + addr, size);
+    _ppu->write_bytes(0x0000, _chr_rom + addr, size);
 }
 
 /*
@@ -139,10 +139,10 @@ void nes_mapper_mmc1::write_chr_bank_1(uint8_t val)
         // 8KB mode is ignored completely
         uint32_t addr = (val & 0x1f) << 12;
         uint16_t size = 0x1000;
-        if (_chr_rom->size() < addr + size)
+        if (_chr_rom_size < addr + size)
             return;
 
-        _ppu->write_bytes(0x1000, _chr_rom->data() + addr, size);
+        _ppu->write_bytes(0x1000, _chr_rom + addr, size);
     }
 }
 
@@ -163,19 +163,19 @@ void nes_mapper_mmc1::write_prg_bank(uint8_t val)
         if (_control & 0x4)
         {
             // fix last bank at $C000 and switch 16KB bank at $8000
-            _mem->set_bytes(0x8000, _prg_rom->data() + (val & 0xf) * 0x4000, 0x4000);
-            _mem->set_bytes(0xc000, _prg_rom->data() + _prg_rom->size() - 0x4000, 0x4000);
+            _mem->set_bytes(0x8000, _prg_rom + (val & 0xf) * 0x4000, 0x4000);
+            _mem->set_bytes(0xc000, _prg_rom + _prg_rom_size - 0x4000, 0x4000);
         }
         else
         {
             // fix first bank at $8000 and switch 16KB bank at $C000
-            _mem->set_bytes(0x8000, _prg_rom->data(), 0x4000);
-            _mem->set_bytes(0xc000, _prg_rom->data() + (val & 0xf) * 0x4000, 0x4000);
+            _mem->set_bytes(0x8000, _prg_rom, 0x4000);
+            _mem->set_bytes(0xc000, _prg_rom + (val & 0xf) * 0x4000, 0x4000);
         }
     }
     else
     {
         // 32KB mode at $8000
-        _mem->set_bytes(0x8000, _prg_rom->data() + (val & 0xe) * 0x4000, 0x8000);
+        _mem->set_bytes(0x8000, _prg_rom + (val & 0xe) * 0x4000, 0x8000);
     }
 }

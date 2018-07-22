@@ -44,8 +44,8 @@ public :
     void stop() { _stop_requested = true; }
 
     void run_program(uint8_t *program_data, std::size_t program_size, uint16_t addr);
-    void load_rom(const char *rom_data, std::size_t rom_size, nes_rom_exec_mode mode);
-    void run_rom(const char *rom_data, std::size_t rom_size, nes_rom_exec_mode mode);
+    void load_rom(uint8_t *rom_data, std::size_t rom_size, nes_rom_exec_mode mode);
+    void run_rom(uint8_t *rom_data, std::size_t rom_size, nes_rom_exec_mode mode);
 
     nes_cpu     *cpu()      { return _cpu.get();   }
     nes_memory  *ram()      { return _ram.get();   }

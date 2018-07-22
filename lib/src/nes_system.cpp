@@ -50,7 +50,7 @@ void nes_system::run_program(uint8_t *program_data, std::size_t program_size, ui
     test_loop();
 }
 
-void nes_system::load_rom(const char *rom_data, std::size_t rom_size, nes_rom_exec_mode mode)
+void nes_system::load_rom(uint8_t *rom_data, std::size_t rom_size, nes_rom_exec_mode mode)
 {
     auto mapper = nes_rom_loader::load_from(rom_data, rom_size);
     _ram->load_mapper(mapper);
@@ -69,7 +69,7 @@ void nes_system::load_rom(const char *rom_data, std::size_t rom_size, nes_rom_ex
     }
 }
 
-void nes_system::run_rom(const char *rom_data, std::size_t rom_size, nes_rom_exec_mode mode)
+void nes_system::run_rom(uint8_t *rom_data, std::size_t rom_size, nes_rom_exec_mode mode)
 {
     load_rom(rom_data, rom_size, mode);
 

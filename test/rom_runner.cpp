@@ -14,5 +14,5 @@ void run_rom(nes_system *system, const char *path, nes_rom_exec_mode mode) {
     rom_data.assign((std::istreambuf_iterator<char>(file)),
                      std::istreambuf_iterator<char>());
 
-    system->run_rom((const char *)rom_data.data(), rom_data.size(), mode);
+    system->run_rom(rom_data.data(), rom_data.size(), mode);
 }
